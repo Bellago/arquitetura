@@ -28,10 +28,6 @@ graph TB
         STORAGE[📦 Storage]
     end
 
-    subgraph "Serviços Externos"
-        N8N[🔄 N8N<br/>Automação/Webhooks]
-    end
-
     %% Conexões dos usuários
     U1 -->|HTTPS| FE
     U2 -->|HTTPS| FE
@@ -45,7 +41,6 @@ graph TB
     %% Conexões do Backend
     BE -->|TypeORM<br/>PostgreSQL Driver| DB
     BE -->|Supabase Client<br/>@supabase/supabase-js| AUTH
-    BE -->|Webhooks| N8N
 
     %% Infraestrutura AWS
     ECR -.->|pull image| ECS
@@ -56,13 +51,11 @@ graph TB
     classDef vercel fill:#000,stroke:#fff,stroke-width:2px,color:#fff
     classDef aws fill:#ff9900,stroke:#232f3e,stroke-width:2px,color:#000
     classDef supabase fill:#3ecf8e,stroke:#fff,stroke-width:2px,color:#000
-    classDef external fill:#6366f1,stroke:#fff,stroke-width:2px,color:#fff
     classDef user fill:#8b5cf6,stroke:#fff,stroke-width:2px,color:#fff
 
     class FE vercel
     class BE,ECS,ECR,SM,CW aws
     class DB,AUTH,STORAGE supabase
-    class N8N external
     class U1,U2 user
 ```
 
@@ -114,11 +107,6 @@ graph TB
   - Supabase Auth para gerenciamento de usuários
   - Supabase Storage para arquivos
 
-### 🔄 Integrações Externas
-- **N8N**: Automação de workflows e webhooks
-  - Notificações
-  - Integrações com serviços externos
-
 ## Fluxo de Dados
 
 1. **Autenticação**: 
@@ -134,10 +122,6 @@ graph TB
 3. **Consultas Diretas**:
    - Algumas operações de leitura podem ir direto do frontend para o Supabase
    - Otimiza performance e reduz carga no backend
-
-4. **Webhooks/Notificações**:
-   - Backend dispara eventos para N8N
-   - N8N executa automações configuradas
 
 ## Segurança
 
