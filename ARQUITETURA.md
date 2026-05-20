@@ -13,8 +13,13 @@ graph TB
         FE[🌐 bellago-web<br/>Next.js 15 + React 19<br/>TailwindCSS<br/>Zustand + TanStack Query]
     end
 
-    subgraph "Oracle OCI"
+    subgraph "AWS (us-east-1)"
         BE[⚙️ ilace-backend<br/>NestJS + TypeORM<br/>Node.js<br/>Docker]
+        ECS[☁️ ECS Fargate<br/>Cluster: ilace-cluster<br/>Service: ilace-backend-service]
+        ECR[📦 ECR<br/>ilace-backend]
+        SM[🔑 Secrets Manager<br/>ilace-backend/env]
+        CW[📊 CloudWatch Logs<br/>/ecs/ilace-backend]
+        BE --- ECS
     end
 
     subgraph "Supabase"
@@ -42,15 +47,20 @@ graph TB
     BE -->|Supabase Client<br/>@supabase/supabase-js| AUTH
     BE -->|Webhooks| N8N
 
+    %% Infraestrutura AWS
+    ECR -.->|pull image| ECS
+    SM -.->|inject secrets| BE
+    BE -.->|logs| CW
+
     %% Estilos
     classDef vercel fill:#000,stroke:#fff,stroke-width:2px,color:#fff
-    classDef oracle fill:#f80000,stroke:#fff,stroke-width:2px,color:#fff
+    classDef aws fill:#ff9900,stroke:#232f3e,stroke-width:2px,color:#000
     classDef supabase fill:#3ecf8e,stroke:#fff,stroke-width:2px,color:#000
     classDef external fill:#6366f1,stroke:#fff,stroke-width:2px,color:#fff
     classDef user fill:#8b5cf6,stroke:#fff,stroke-width:2px,color:#fff
 
     class FE vercel
-    class BE oracle
+    class BE,ECS,ECR,SM,CW aws
     class DB,AUTH,STORAGE supabase
     class N8N external
     class U1,U2 user
@@ -67,7 +77,7 @@ graph TB
   - Supabase Client para autenticação e banco de dados
 - **Deploy**: Vercel (CI/CD automático)
 
-### ⚙️ Backend - ilace-backend (Oracle OCI)
+### ⚙️ Backend - ilace-backend (AWS)
 - **Framework**: NestJS
 - **ORM**: TypeORM
 - **Runtime**: Node.js
@@ -81,7 +91,15 @@ graph TB
   - Services (Serviços)
   - Payments (Pagamentos)
   - Notifications (Notificações)
-- **Deploy**: Oracle Cloud Infrastructure (OCI)
+- **Deploy**: AWS ECS Fargate
+  - **Região**: `us-east-1`
+  - **Cluster**: `ilace-cluster`
+  - **Service**: `ilace-backend-service`
+  - **Task Definition Family**: `ilace-backend`
+  - **Registry**: Amazon ECR (`ilace-backend`)
+  - **Secrets**: AWS Secrets Manager (`ilace-backend/env`)
+  - **Logs**: Amazon CloudWatch Logs (`/ecs/ilace-backend`)
+  - **CI/CD**: GitHub Actions
 
 ### 🗄️ Banco de Dados - Supabase
 - **Tipo**: PostgreSQL
@@ -127,11 +145,11 @@ graph TB
 - ✅ HTTPS em todas as conexões
 - ✅ Row Level Security (RLS) no Supabase
 - ✅ Validações no backend com class-validator
-- ✅ Variáveis de ambiente para secrets
+- ✅ Secrets gerenciados via AWS Secrets Manager
 - ✅ CORS configurado
 
 ## Escalabilidade
 
 - **Frontend**: Escala automaticamente na Vercel (serverless)
-- **Backend**: Containerizado com Docker, pode escalar horizontalmente na OCI
+- **Backend**: Containerizado com Docker, escala horizontalmente no AWS ECS Fargate (cluster `ilace-cluster`)
 - **Banco de Dados**: Supabase gerencia escalabilidade do PostgreSQL
